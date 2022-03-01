@@ -1,11 +1,8 @@
-CC=gcc
-CFLAGS=-I.
+CFLAGS+=-std=c99 -g -Isrc -Iinclude
 
-
-sha_test:
-	$(CC) -o sha_test test_sha.c sha1.c $(CFLAGS)
+test_sha: src/test_sha.c src/sha1.o
 
 clean:
-	-rm test_sha.o sha1.o
+	-rm -f src/*.o
 purge: clean
-	-rm sha_test
+	-rm -f test_sha
