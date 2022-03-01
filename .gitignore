@@ -71,5 +71,5 @@ PLLJ_PLLSPE_INFO.txt
 
 
 ## C implementation
-
+*.o
 sha_test
