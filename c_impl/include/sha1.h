@@ -12,7 +12,10 @@
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 #define ror(value, bits) (((value) >> (bits)) | ((value) << (32 - (bits))))
 
+#define big_endian(value) (((value & 0xff) << 24) | (((value & 0xff00)) << 8) | (((value & 0xff0000)) >> 8) | ((value & 0xff000000) >> 24))
+
 
 void test(int a);
 
-uint8_t *SHA1(uint8_t *digest, uint8_t *data, uint64_t data_length);
+uint32_t    *SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length);
+int         digest(uint32_t *hash_words, uint8_t *data, uint64_t* data_len_bits, int num_data_bytes);

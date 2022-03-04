@@ -68,8 +68,10 @@ db/
 _output_files/
 PLLJ_PLLSPE_INFO.txt
 
-
+# VSCode
+.vscode/
 
 ## C implementation
+*.out
 *.o
 sha_test
