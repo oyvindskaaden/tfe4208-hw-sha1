@@ -34,12 +34,6 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
 
     uint64_t data_length_bits = data_length * 8;
 
-    while (digest(h, data, &data_length_bits, &data_length)) 
-    {
-        data_length -= 64;
-        data += 64;
-    }
-
 
 
 
@@ -87,11 +81,6 @@ digest(uint32_t *hash_words, uint8_t *data, int *rem_data_bytes, uint8_t* data_t
     }
     
     /* DO PROCESSING */
-
-
-    *data               -= (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
-
-    *rem_data_bytes     -= (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
     
 
 }
