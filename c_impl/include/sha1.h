@@ -17,5 +17,6 @@
 
 void test(int a);
 
-uint32_t    *SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length);
-int         digest(uint32_t *hash_words, uint8_t *data, uint64_t* data_len_bits, int num_data_bytes);
+uint32_t*   SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length);
+uint8_t*    prepare_datatail(uint8_t data_tail[2 * CHUNK_SIZE_BYTES], uint64_t data_len, int no_tailbytes);
+int         digest(uint32_t *hash_words, uint8_t *data, int *rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes);
