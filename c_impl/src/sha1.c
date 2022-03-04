@@ -28,7 +28,7 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
 
     // Datatail is used to pad out the data stream so that the 
     // total datalenght is a multiple of 512 bits or 64 bytes
-    uint8_t datatail[2 * CHUNK_SIZE_BYTES];
+    uint8_t data_tail[CHUNK_SIZE_BYTES + 8];
 
 
 
