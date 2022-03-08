@@ -26,7 +26,10 @@ int main(int argc, char const *argv[])
     };
     uint64_t drow2[NO_WORDS];
 
-    printf("ptr1: %p\nprt2: %p\n", &word2[0], &word2[1]);
+    uint32_t ptr1 = 0;
+    uint32_t ptr2 = 0;
+
+    printf("ptr1: %p\nprt2: %p\n", word2, &word2);
 
     for (int i = 0; i < sizeof(uint64_t); i++) 
     {
@@ -37,9 +40,6 @@ int main(int argc, char const *argv[])
     {
         memcpy((uint8_t*)&drow2 + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), (uint8_t*)word2 + i, 1);
     }
-
-
-
 
     printf("word:\t%016lx\ndrow1:\t%016lx\n", word, drow);
 
