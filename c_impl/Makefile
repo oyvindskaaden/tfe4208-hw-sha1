@@ -1,4 +1,4 @@
-CFLAGS+=-std=c99 -g -Isrc -Iinclude
+CFLAGS+=-g -Isrc -Iinclude
 CC=gcc
 
 test_sha: src/test_sha.c src/sha1.c
