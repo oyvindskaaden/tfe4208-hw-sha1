@@ -49,6 +49,10 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
     
     digest = set_digest(digest, h);
 
+    //hh = (h0 leftshift 128) or (h1 leftshift 96) or (h2 leftshift 64) or (h3 leftshift 32) or h4
+    
+    
+    hh = h[0] << 128 | h[1] << 96 | h[2] << 64 | h[3] << 32 | h[4];  
     return digest;
 }   
 
@@ -110,6 +114,63 @@ digest_chunk(uint32_t *hash_words, uint8_t *data, uint64_t *rem_data_bytes, uint
     
     
     /* DO PROCESSING */
+    for( i=16; i<80; i++)
+    {  
+       // Note 3: SHA-0 differs by not having this leftrotate.
+        w[i] = rol((w[i-3] ^ w[i-8] ^ w[i-14] ^ w[i-16]) , 1);
+    }
+
+
+    a = h[0];
+    b = h[1];
+    c = h[2];
+    d = h[3];
+    e = h[4];
+
+    for (int i = 0; i<80 ; i++)
+    {
+        switch (i)
+        {
+        case 0 ... 19:
+                f = (b & c) | ((~b) & d);
+                k = 0x5A827999;
+            break;
+        
+        case 20 ... 39:
+                f = b ^ c ^ d;
+                k = 0x6ED9EBA1;
+            break;
+
+        case 40 ... 59:
+                f = (b & c) | (b & d) | (c & d);
+                k = 0x8F1BBCDC;
+            break;        
+        
+        case 60 ... 79:
+                f = b ^ c ^ d;
+                k = 0xCA62C1D6;
+            break;        
+
+        default:
+            break;
+
+            temp = (rol(a,5))+f+e+k+w[i];
+            e = d;
+            d = c;
+            c = rol(b,30);
+            b = a;
+            a = temp;
+        }
+        h[0] += a;
+        h[1] += b;
+        h[2] += c;
+        h[3] += d;
+        h[4] += e;
+    }
+
+    *data               -= (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
+
+    *rem_data_bytes     -= (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
     
     return is_complete;
 }
