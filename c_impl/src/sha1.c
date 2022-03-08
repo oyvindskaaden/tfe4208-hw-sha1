@@ -47,6 +47,12 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
     // Fill the datatail with the appropriate data.
     prepare_datatail(data_tail, data_length, no_tail_bytes);
 
+    printf("Data tail: [");
+    for (int i = 0; i < no_tail_bytes - 1; i++)
+        printf("%x, ", data_tail[i]);
+    printf("%x]\n", data_tail[no_tail_bytes - 1]);
+
+
     DBGPRT("Data ptr: \t\t\t\t%p", data)
     DBGPRT("Data length:\t\t\t\t%02ld", data_length)
     DBGPRT("Data tail ptr: \t\t\t\t%p", data_tail)
@@ -74,19 +80,21 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
 uint8_t*
 prepare_datatail(uint8_t data_tail[CHUNK_SIZE_BYTES + 8], uint64_t data_len, int no_tailbytes)
 {
+    memset(data_tail, 0, CHUNK_SIZE_BYTES + 8);
     // Insert 0x80 at the end because the message is a multiple of 8
     data_tail[0] = 0x80;
 
     uint64_t data_len_bits = data_len * 8;
     // Insert the length of bits at the end of the tail as big-endian. (flip the bytes)
     for (int i = 0; i < sizeof(uint64_t); i++)
-        data_tail[no_tailbytes - 1 - i] = *((uint8_t*)&data_len_bits + i);
+        memcpy(data_tail + no_tailbytes - 1 - i, (uint8_t*)&data_len_bits + i, sizeof(uint8_t));
+        //data_tail[no_tailbytes - 1 - i] = *((uint8_t*)&data_len_bits + i);
 
     return data_tail;
 }
 
 bool 
-digest_chunk(uint32_t *hash_words, uint8_t **data, uint64_t *rem_data_bytes, uint8_t *data_tail, int* rem_tail_bytes)
+digest_chunk(uint32_t* hash_words, uint8_t** data, uint64_t* rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes)
 {    
     DBGPRT("===== Into loop! =====")
     bool is_complete = false;
@@ -105,7 +113,7 @@ digest_chunk(uint32_t *hash_words, uint8_t **data, uint64_t *rem_data_bytes, uin
     {
         // Copy the data stream into the working words, 
         // also convert from little-endian to big-endian.
-        memcpy((uint8_t*)w + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), *data + i, 1);
+        memcpy((uint8_t*)&w + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), *data + i, sizeof(uint8_t));
     }
 
     // If the chunk size is smaller than 64, return the remaining bytes and start copying in from tail bytes
@@ -138,7 +146,7 @@ digest_chunk(uint32_t *hash_words, uint8_t **data, uint64_t *rem_data_bytes, uin
     
     /* DO PROCESSING */
     for (int i = 16; i < 80; i++)
-        w[i] = rol((w[i-3] ^ w[i-8] ^ w[i-14] ^ w[i-16]) , 1);
+        w[i] = rol((w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16]) , 1);
 
 
     a = hash_words[0];
