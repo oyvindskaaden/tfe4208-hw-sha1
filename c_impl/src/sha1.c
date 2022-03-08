@@ -31,11 +31,14 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
     // total datalenght is a multiple of 512 bits or 64 bytes
 
     // Find the padding needed to fill all the 64 byte chunks.
+    DBGPRT("Number of bytes to process: %ld", data_length)
     int no_tail_bytes = CHUNK_SIZE_BYTES - (data_length % CHUNK_SIZE_BYTES);
 
     // If there is not enough room for the minimum 9 tail bytes, 
     if (no_tail_bytes < MINIMUM_TAIL_BYTES)
         no_tail_bytes += CHUNK_SIZE_BYTES;
+
+    DBGPRT("Numer of tailbytes: %d", no_tail_bytes)
 
     // The longest datatail happens if there are space for 8 bytes to fill the 64. 
     // Therefore we need at max CHUNK_SIZE_BYTES (64) + 8 bytes to hold all the bits.
@@ -44,8 +47,20 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
     // Fill the datatail with the appropriate data.
     prepare_datatail(data_tail, data_length, no_tail_bytes);
 
+    DBGPRT("Data ptr: \t\t\t\t%p", data)
+    DBGPRT("Data length:\t\t\t\t%02ld", data_length)
+    DBGPRT("Data tail ptr: \t\t\t\t%p", data_tail)
+    DBGPRT("Number of remaining tail bytes: \t%02d", no_tail_bytes)
+
+
     // Digest chunk until there is no more data. The function returns true when it is finished
-    while (!digest_chunk(h, data, &data_length, data_tail, &no_tail_bytes)) {}
+    while (!digest_chunk(h, &data, &data_length, data_tail, &no_tail_bytes)) 
+    {
+        DBGPRT("Data ptr: \t\t\t\t%p", data)
+        DBGPRT("Data length:\t\t\t\t%02ld", data_length)
+        DBGPRT("Data tail ptr: \t\t\t\t%p", data_tail)
+        DBGPRT("Number of remaining tail bytes: \t%02d", no_tail_bytes)
+    }
     
     digest = set_digest(digest, h);
 
@@ -71,8 +86,9 @@ prepare_datatail(uint8_t data_tail[CHUNK_SIZE_BYTES + 8], uint64_t data_len, int
 }
 
 bool 
-digest_chunk(uint32_t *hash_words, uint8_t *data, uint64_t *rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes)
+digest_chunk(uint32_t *hash_words, uint8_t **data, uint64_t *rem_data_bytes, uint8_t *data_tail, int* rem_tail_bytes)
 {    
+    DBGPRT("===== Into loop! =====")
     bool is_complete = false;
 
     uint32_t a, b, c, d, e;
@@ -81,44 +97,48 @@ digest_chunk(uint32_t *hash_words, uint8_t *data, uint64_t *rem_data_bytes, uint
 
     memset(w, 0, NO_WORK_WORDS * sizeof(uint32_t));
 
-    int chunk_size = (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
+    // Get the chunk size, if more than 64, set it to 64.
+    uint8_t chunk_size = (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
 
 
     for (int i = 0; i < chunk_size; i++)
     {
         // Copy the data stream into the working words, 
         // also convert from little-endian to big-endian.
-        memcpy((uint8_t*)w + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), data + i, 1);
+        memcpy((uint8_t*)w + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), *data + i, 1);
     }
 
+    // If the chunk size is smaller than 64, return the remaining bytes and start copying in from tail bytes
     int rem_bytes_in_chunk = CHUNK_SIZE_BYTES - chunk_size;
+    DBGPRT("Remaining bytes in data chunk: %d", rem_bytes_in_chunk)
     if (rem_bytes_in_chunk)
     {
         // Fill the remaining bytes with the generated tailbytes
         memcpy((uint8_t*)w + chunk_size, data_tail, rem_bytes_in_chunk);
     }
-    if (*rem_tail_bytes == rem_bytes_in_chunk)
-        is_complete = true;
+    //if (*rem_tail_bytes == rem_bytes_in_chunk)
+    //    is_complete = true;
     
     // Move the pointer to the data_tail array,
     // and decrement the amount of tailbytes to append.
-    data_tail       += rem_bytes_in_chunk;
+    *data_tail      += rem_bytes_in_chunk;
     *rem_tail_bytes -= rem_bytes_in_chunk;
+
+    DBGPRT("Remaining tail bytes inside loop: %d", *rem_tail_bytes);
+    if (*rem_tail_bytes <= 0)
+        is_complete = true;
 
     // Move the pointer to the data bytes array,
     // and decrement the amount of remaining bytes.
     // It does not matter that the data pointer is outside range,
     // it is protected by the rem_data_bytes variable.
-    data            += (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
-    *rem_data_bytes -= (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
+    *data           += chunk_size;//(*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
+    *rem_data_bytes -= chunk_size;//(*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
     
     
     /* DO PROCESSING */
     for (int i = 16; i < 80; i++)
-    {  
-       // Note 3: SHA-0 differs by not having this leftrotate.
         w[i] = rol((w[i-3] ^ w[i-8] ^ w[i-14] ^ w[i-16]) , 1);
-    }
 
 
     a = hash_words[0];
@@ -160,17 +180,14 @@ digest_chunk(uint32_t *hash_words, uint8_t *data, uint64_t *rem_data_bytes, uint
         a = temp;
 
     }
-    
+
     hash_words[0] += a;
     hash_words[1] += b;
     hash_words[2] += c;
     hash_words[3] += d;
     hash_words[4] += e;
-
-    *data               -= (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
-
-    *rem_data_bytes     -= (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
     
+    DBGPRT("===== Out of loop! =====")
     return is_complete;
 }
 
