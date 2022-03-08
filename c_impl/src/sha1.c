@@ -5,19 +5,20 @@ void test(int a)
     printf("Print from test: %d\n", a);
 }
 
-uint8_t*
-set_digest(uint8_t *digest, uint32_t *result) 
+uint32_t*
+set_digest(uint32_t *digest, uint32_t *result) 
 {
-    for (int i = 0; i < SHA1_LEN_BYTES; i++) {
-        memcpy(digest + (4 - i) * sizeof(uint32_t), &result[i], sizeof(uint32_t));
-    }
+    // Flip the 32 bit words so that digest is a continious 160 bit digest.
+    for (int i = 0; i < SHA1_LEN_BYTES; i++)
+        memcpy(&digest[4 - i], &result[i], sizeof(uint32_t));
+    
     return digest;
 }
 
 uint32_t* 
 SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length) 
 {
-
+    // Initial hash values
     uint32_t h[5] = {
         0x67452301,
         0xEFCDAB89,
@@ -29,8 +30,12 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
     // Datatail is used to pad out the data stream so that the 
     // total datalenght is a multiple of 512 bits or 64 bytes
     int rem_tail_bytes = 9;
+
+    // The longest datatail happens if there are space for 8 bytes to fill the 64. 
+    // Therefore we need at max CHUNK_SIZE_BYTES (64) + 8 bytes to hold all the bits.
     uint8_t data_tail[CHUNK_SIZE_BYTES + 8];
 
+    // Fill the datatail with the appropriate data.
     prepare_datatail(data_tail, data_length, rem_tail_bytes);
 
     uint64_t data_length_bits = data_length * 8;
@@ -38,7 +43,7 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
 
     while (!digest_chunk(h, data, &data_length, data_tail, &rem_tail_bytes)) {}
     
-
+    digest = set_digest(digest, h);
 
     return digest;
 }   
@@ -102,3 +107,4 @@ digest_chunk(uint32_t *hash_words, uint8_t *data, int *rem_data_bytes, uint8_t* 
     
 
 }
+
