@@ -9,6 +9,8 @@
 #define CHUNK_SIZE_BYTES    64  /* 512 bits */
 #define NO_WORK_WORDS       80  /* 80 words */
 
+#define MINIMUM_TAIL_BYTES  9   /* 1 byte for 0x80 and 8 bytes for the 64 bit data length in bits */
+
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
 #define ror(value, bits) (((value) >> (bits)) | ((value) << (32 - (bits))))
 
