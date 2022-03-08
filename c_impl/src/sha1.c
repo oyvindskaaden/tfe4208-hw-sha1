@@ -29,7 +29,13 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
 
     // Datatail is used to pad out the data stream so that the 
     // total datalenght is a multiple of 512 bits or 64 bytes
-    int rem_tail_bytes = 9;
+
+    // Find the padding needed to fill all the 64 byte chunks.
+    int rem_tail_bytes = CHUNK_SIZE_BYTES - (data_length % CHUNK_SIZE_BYTES);
+
+    // If there is not enough room for the minimum 9 tail bytes, 
+    if (rem_tail_bytes < MINIMUM_TAIL_BYTES)
+        rem_tail_bytes += CHUNK_SIZE_BYTES;
 
     // The longest datatail happens if there are space for 8 bytes to fill the 64. 
     // Therefore we need at max CHUNK_SIZE_BYTES (64) + 8 bytes to hold all the bits.
