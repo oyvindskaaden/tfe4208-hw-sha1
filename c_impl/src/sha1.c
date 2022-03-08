@@ -9,7 +9,7 @@ uint32_t*
 set_digest(uint32_t *digest, uint32_t *result) 
 {
     // Flip the 32 bit words so that digest is a continious 160 bit digest.
-    for (int i = 0; i < SHA1_LEN_BYTES; i++)
+    for (int i = 0; i < SHA1_LEN_WORDS; i++)
         memcpy(&digest[4 - i], &result[i], sizeof(uint32_t));
     
     return digest;
@@ -31,23 +31,21 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
     // total datalenght is a multiple of 512 bits or 64 bytes
 
     // Find the padding needed to fill all the 64 byte chunks.
-    int rem_tail_bytes = CHUNK_SIZE_BYTES - (data_length % CHUNK_SIZE_BYTES);
+    int no_tail_bytes = CHUNK_SIZE_BYTES - (data_length % CHUNK_SIZE_BYTES);
 
     // If there is not enough room for the minimum 9 tail bytes, 
-    if (rem_tail_bytes < MINIMUM_TAIL_BYTES)
-        rem_tail_bytes += CHUNK_SIZE_BYTES;
+    if (no_tail_bytes < MINIMUM_TAIL_BYTES)
+        no_tail_bytes += CHUNK_SIZE_BYTES;
 
     // The longest datatail happens if there are space for 8 bytes to fill the 64. 
     // Therefore we need at max CHUNK_SIZE_BYTES (64) + 8 bytes to hold all the bits.
     uint8_t data_tail[CHUNK_SIZE_BYTES + 8];
 
     // Fill the datatail with the appropriate data.
-    prepare_datatail(data_tail, data_length, rem_tail_bytes);
+    prepare_datatail(data_tail, data_length, no_tail_bytes);
 
-    uint64_t data_length_bits = data_length * 8;
-
-
-    while (!digest_chunk(h, data, &data_length, data_tail, &rem_tail_bytes)) {}
+    // Digest chunk until there is no more data. The function returns true when it is finished
+    while (!digest_chunk(h, data, &data_length, data_tail, &no_tail_bytes)) {}
     
     digest = set_digest(digest, h);
 
@@ -64,10 +62,12 @@ prepare_datatail(uint8_t data_tail[CHUNK_SIZE_BYTES + 8], uint64_t data_len, int
     // Insert the length of bits at the end of the tail as big-endian. (flip the bytes)
     for (int i = 0; i < sizeof(uint64_t); i++)
         data_tail[no_tailbytes - 1 - i] = *((uint8_t*)&data_len_bits + i);
+
+    return data_tail;
 }
 
 bool 
-digest_chunk(uint32_t *hash_words, uint8_t *data, int *rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes)
+digest_chunk(uint32_t *hash_words, uint8_t *data, uint64_t *rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes)
 {    
     bool is_complete = false;
 
@@ -93,8 +93,8 @@ digest_chunk(uint32_t *hash_words, uint8_t *data, int *rem_data_bytes, uint8_t* 
         // Fill the remaining bytes with the generated tailbytes
         memcpy((uint8_t*)w + chunk_size, data_tail, rem_bytes_in_chunk);
     }
-    if (rem_tail_bytes == rem_bytes_in_chunk)
-        is_complete = false;
+    if (*rem_tail_bytes == rem_bytes_in_chunk)
+        is_complete = true;
     
     // Move the pointer to the data_tail array,
     // and decrement the amount of tailbytes to append.
@@ -111,6 +111,15 @@ digest_chunk(uint32_t *hash_words, uint8_t *data, int *rem_data_bytes, uint8_t* 
     
     /* DO PROCESSING */
     
-
+    return is_complete;
 }
 
+
+void
+print_sha(uint32_t *digest, bool append_newline)
+{
+    for (int i = 0; i < 5; i++)
+        printf("%08x", digest[i]);
+    if (append_newline) 
+        putchar('\n');
+}

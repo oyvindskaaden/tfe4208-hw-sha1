@@ -4,7 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define SHA1_LEN_BYTES      20  /* 160 bits */
+#define SHA1_LEN_WORDS      5   /* 5 32 bit words in each digest */
+#define SHA1_LEN_BYTES      SHA1_LEN_WORDS * 4  /* 160 bits */
 
 #define CHUNK_SIZE_BYTES    64  /* 512 bits */
 #define NO_WORK_WORDS       80  /* 80 words */
@@ -21,4 +22,6 @@ void test(int a);
 
 uint32_t*   SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length);
 uint8_t*    prepare_datatail(uint8_t data_tail[CHUNK_SIZE_BYTES + 8], uint64_t data_len, int no_tailbytes);
-bool        digest_chunk(uint32_t *hash_words, uint8_t *data, int *rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes);
+bool        digest_chunk(uint32_t *hash_words, uint8_t *data, uint64_t *rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes);
+
+void        print_sha(uint32_t *digest, bool append_newline);
