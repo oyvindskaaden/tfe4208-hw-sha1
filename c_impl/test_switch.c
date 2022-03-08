@@ -26,6 +26,8 @@ int main(int argc, char const *argv[])
     };
     uint64_t drow2[NO_WORDS];
 
+    printf("ptr1: %p\nprt2: %p\n", &word2[0], &word2[1]);
+
     for (int i = 0; i < sizeof(uint64_t); i++) 
     {
         *((uint8_t*)&drow + i) = *((uint8_t*)&word + sizeof(uint64_t) - 1 - i);
