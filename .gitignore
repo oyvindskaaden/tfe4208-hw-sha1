@@ -74,4 +74,4 @@ PLLJ_PLLSPE_INFO.txt
 ## C implementation
 *.out
 *.o
-sha_test
+test_sha
