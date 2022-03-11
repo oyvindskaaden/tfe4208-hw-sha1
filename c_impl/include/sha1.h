@@ -20,8 +20,10 @@
 #define DEBUG
 #ifdef DEBUG
 #define DBGPRT(format, args...)       {printf("[DEBUG] ");printf(format, ##args);putchar('\n');}
+#define DBGPRTARR(array_ptr, array_len)       {printf("[DEBUG] ");debug_print_array_bytes(array_ptr, array_len);}
 #else
 #define DBGPRT(format, args...)       
+#define DBGPRTARR(array_ptr, array_len)
 #endif
 
 
@@ -32,3 +34,5 @@ uint8_t*    prepare_datatail(uint8_t data_tail[CHUNK_SIZE_BYTES + 8], uint64_t d
 bool        digest_chunk(uint32_t* hash_words, uint8_t** data, uint64_t* rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes);
 
 void        print_sha(uint32_t *digest, bool append_newline);
+
+void        debug_print_array_bytes(uint8_t* array_ptr, uint64_t array_len);
