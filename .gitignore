@@ -75,3 +75,4 @@ PLLJ_PLLSPE_INFO.txt
 *.out
 *.o
 test_sha
+*.plist
