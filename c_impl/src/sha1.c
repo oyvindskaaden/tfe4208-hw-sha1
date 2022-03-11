@@ -74,7 +74,7 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
         DBGPRT("Tail ptr:\t\t%p",       sha1_ctrl.tail_bytes)
         DBGPRT("Rem tail:\t\t%02ld",    sha1_ctrl.rem_tail_bytes)
     }
-    
+
     digest = set_digest(digest, h);
 
     //hh = (h0 leftshift 128) or (h1 leftshift 96) or (h2 leftshift 64) or (h3 leftshift 32) or h4
@@ -121,7 +121,10 @@ digest_chunk(uint32_t* hash_words, SHA1_Control_t* sha1_ctrl)
         // Copy the data stream into the working words, 
         // also convert from little-endian to big-endian.
         memcpy((uint8_t*)&w + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), sha1_ctrl->data_bytes + i, sizeof(uint8_t));
+        DBGPRT("Data being copied: %02x ", *(*data+i))
     }
+    DBGPRTARR((uint8_t*)w, chunk_size)
+    
 
     // If the chunk size is smaller than 64, return the remaining bytes and start copying in from tail bytes
     int rem_bytes_in_chunk = CHUNK_SIZE_BYTES - chunk_size;
@@ -131,6 +134,9 @@ digest_chunk(uint32_t* hash_words, SHA1_Control_t* sha1_ctrl)
         // Fill the remaining bytes with the generated tailbytes
         memcpy((uint8_t*)w + chunk_size, sha1_ctrl->tail_bytes, rem_bytes_in_chunk);
     }
+    //DBGPRTARR((uint8_t*)w, CHUNK_SIZE_BYTES )
+    //if (*rem_tail_bytes == rem_bytes_in_chunk)
+    //    is_complete = true;
     
     // Move the pointer to the data_tail array,
     // and decrement the amount of tailbytes to append.
@@ -212,4 +218,12 @@ print_sha(uint32_t *digest, bool append_newline)
         printf("%08x", digest[i]);
     if (append_newline) 
         putchar('\n');
+}
+
+void
+debug_print_array_bytes(uint8_t* array_ptr, uint64_t array_len )
+{
+    printf("Array bytes: ");
+    for (int i =0; i < array_len; i++) printf(" %0x", array_ptr[i] );
+    printf("\n");
 }

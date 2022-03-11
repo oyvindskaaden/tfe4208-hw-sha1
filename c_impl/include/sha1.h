@@ -20,8 +20,10 @@
 #define DEBUG
 #ifdef DEBUG
 #define DBGPRT(format, args...)       {printf("[DEBUG] ");printf(format, ##args);putchar('\n');}
+#define DBGPRTARR(array_ptr, array_len)       {printf("[DEBUG] ");debug_print_array_bytes(array_ptr, array_len);}
 #else
 #define DBGPRT(format, args...)       
+#define DBGPRTARR(array_ptr, array_len)
 #endif
 
 typedef struct sha1
@@ -40,3 +42,5 @@ uint8_t*    prepare_tailbytes(uint8_t tail_bytes[CHUNK_SIZE_BYTES + 8], uint64_t
 bool        digest_chunk(uint32_t* hash_words, SHA1_Control_t* sha1_ctrl);
 
 void        print_sha(uint32_t *digest, bool append_newline);
+
+void        debug_print_array_bytes(uint8_t* array_ptr, uint64_t array_len);
