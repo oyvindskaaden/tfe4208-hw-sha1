@@ -7,8 +7,8 @@ int main(int argc, char const *argv[])
 {
     uint32_t digest[5];
 
-    //char data[] = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567";
-    char data[] = "abc";
+    char data[] = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567";
+    //char data[] = "abc";
     //char data[] = "";
     
     SHA1(digest, (uint8_t*)data, strlen(data));

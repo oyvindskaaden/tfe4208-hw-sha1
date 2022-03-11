@@ -38,35 +38,41 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
     if (no_tail_bytes < MINIMUM_TAIL_BYTES)
         no_tail_bytes += CHUNK_SIZE_BYTES;
 
-    DBGPRT("Numer of tailbytes: %d", no_tail_bytes)
+    DBGPRT("Numer of tail bytes: %d", no_tail_bytes)
 
     // The longest datatail happens if there are space for 8 bytes to fill the 64. 
     // Therefore we need at max CHUNK_SIZE_BYTES (64) + 8 bytes to hold all the bits.
-    uint8_t data_tail[CHUNK_SIZE_BYTES + 8];
+    uint8_t tail_bytes[CHUNK_SIZE_BYTES + 8];
 
     // Fill the datatail with the appropriate data.
-    prepare_datatail(data_tail, data_length, no_tail_bytes);
+    prepare_tailbytes(tail_bytes, data_length, no_tail_bytes);
 
     printf("Data tail: [");
-    for (int i = 0; i < no_tail_bytes - 1; i++)
-        printf("%x, ", data_tail[i]);
-    printf("%x]\n", data_tail[no_tail_bytes - 1]);
+    for (int i = 0; i < CHUNK_SIZE_BYTES + 8; i++)
+        printf("%x, ", tail_bytes[i]);
+    printf("%x]\n", tail_bytes[CHUNK_SIZE_BYTES + 8 - 1]);
+
+    SHA1_Control_t sha1_ctrl = (SHA1_Control_t){
+        .data_bytes     = data,
+        .rem_data_bytes = data_length,
+        .tail_bytes     = tail_bytes,
+        .rem_tail_bytes = no_tail_bytes
+    };
 
 
-    DBGPRT("Data ptr: \t\t\t\t%p", data)
-    DBGPRT("Data length:\t\t\t\t%02ld", data_length)
-    DBGPRT("Data tail ptr: \t\t\t\t%p", data_tail)
-    DBGPRT("Number of remaining tail bytes: \t%02d", no_tail_bytes)
-    
+    DBGPRT("Data ptr:\t\t%p",       sha1_ctrl.data_bytes)
+    DBGPRT("Rem data:\t\t%02ld",    sha1_ctrl.rem_data_bytes)
+    DBGPRT("Tail ptr:\t\t%p",       sha1_ctrl.tail_bytes)
+    DBGPRT("Rem tail:\t\t%02ld",    sha1_ctrl.rem_tail_bytes)
+
 
     // Digest chunk until there is no more data. The function returns true when it is finished
-    while (!digest_chunk(h, &data, &data_length, data_tail, &no_tail_bytes)) 
+    while (!digest_chunk(h, &sha1_ctrl)) 
     {
-        DBGPRT("Data ptr: \t\t\t\t%p", data)
-        DBGPRT("Data length:\t\t\t\t%02ld", data_length)
-        DBGPRT("Data tail ptr: \t\t\t\t%p", data_tail)
-        DBGPRT("Number of remaining tail bytes: \t%02d", no_tail_bytes)
-
+        DBGPRT("Data ptr:\t\t%p",       sha1_ctrl.data_bytes)
+        DBGPRT("Rem data:\t\t%02ld",    sha1_ctrl.rem_data_bytes)
+        DBGPRT("Tail ptr:\t\t%p",       sha1_ctrl.tail_bytes)
+        DBGPRT("Rem tail:\t\t%02ld",    sha1_ctrl.rem_tail_bytes)
     }
 
     digest = set_digest(digest, h);
@@ -79,23 +85,23 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
 }   
 
 uint8_t*
-prepare_datatail(uint8_t data_tail[CHUNK_SIZE_BYTES + 8], uint64_t data_len, int no_tailbytes)
+prepare_tailbytes(uint8_t tail_bytes[CHUNK_SIZE_BYTES + 8], uint64_t data_len, int no_tailbytes)
 {
-   memset(data_tail, 0, CHUNK_SIZE_BYTES + 8);
+    memset(tail_bytes, 0, CHUNK_SIZE_BYTES + 8);
     // Insert 0x80 at the end because the message is a multiple of 8
-    data_tail[0] = 0x80;
+    tail_bytes[0] = 0x80;
 
     uint64_t data_len_bits = data_len * 8;
     // Insert the length of bits at the end of the tail as big-endian. (flip the bytes)
     for (int i = 0; i < sizeof(uint64_t); i++)
-        memcpy(data_tail + no_tailbytes - 1 - i, (uint8_t*)&data_len_bits + i, sizeof(uint8_t));
-        //data_tail[no_tailbytes - 1 - i] = *((uint8_t*)&data_len_bits + i);
+        memcpy(tail_bytes + no_tailbytes - 1 - i, (uint8_t*)&data_len_bits + i, sizeof(uint8_t));
+        //tail_bytes[no_tailbytes - 1 - i] = *((uint8_t*)&data_len_bits + i);
 
-    return data_tail;
+    return tail_bytes;
 }
 
 bool 
-digest_chunk(uint32_t* hash_words, uint8_t** data, uint64_t* rem_data_bytes, uint8_t* data_tail, int* rem_tail_bytes)
+digest_chunk(uint32_t* hash_words, SHA1_Control_t* sha1_ctrl)
 {    
     DBGPRT("===== Into loop! =====")
     bool is_complete = false;
@@ -107,14 +113,14 @@ digest_chunk(uint32_t* hash_words, uint8_t** data, uint64_t* rem_data_bytes, uin
     memset(w, 0, NO_WORK_WORDS * sizeof(uint32_t));
 
     // Get the chunk size, if more than 64, set it to 64.
-    uint8_t chunk_size = (*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
+    uint8_t chunk_size = (sha1_ctrl->rem_data_bytes > 64) ? 64 : sha1_ctrl->rem_data_bytes;
 
 
     for (int i = 0; i < chunk_size; i++)
     {
         // Copy the data stream into the working words, 
         // also convert from little-endian to big-endian.
-        memcpy((uint8_t*)&w + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), *data+i, sizeof(uint8_t));
+        memcpy((uint8_t*)&w + ((~0x7) & i ) + sizeof(uint64_t) - 1 - (i % sizeof(uint64_t)), sha1_ctrl->data_bytes + i, sizeof(uint8_t));
         DBGPRT("Data being copied: %02x ", *(*data+i))
     }
     DBGPRTARR((uint8_t*)w, chunk_size)
@@ -126,7 +132,7 @@ digest_chunk(uint32_t* hash_words, uint8_t** data, uint64_t* rem_data_bytes, uin
     if (rem_bytes_in_chunk)
     {
         // Fill the remaining bytes with the generated tailbytes
-        memcpy((uint8_t*)w + chunk_size, data_tail, rem_bytes_in_chunk);
+        memcpy((uint8_t*)w + chunk_size, sha1_ctrl->tail_bytes, rem_bytes_in_chunk);
     }
     //DBGPRTARR((uint8_t*)w, CHUNK_SIZE_BYTES )
     //if (*rem_tail_bytes == rem_bytes_in_chunk)
@@ -134,19 +140,19 @@ digest_chunk(uint32_t* hash_words, uint8_t** data, uint64_t* rem_data_bytes, uin
     
     // Move the pointer to the data_tail array,
     // and decrement the amount of tailbytes to append.
-    *data_tail      += rem_bytes_in_chunk;
-    *rem_tail_bytes -= rem_bytes_in_chunk;
+    sha1_ctrl->tail_bytes       += rem_bytes_in_chunk;
+    sha1_ctrl->rem_tail_bytes   -= rem_bytes_in_chunk;
 
-    DBGPRT("Remaining tail bytes inside loop: %d", *rem_tail_bytes);
-    if (*rem_tail_bytes <= 0)
+    DBGPRT("Remaining tail bytes inside loop: %ld", sha1_ctrl->rem_tail_bytes);
+    if (!sha1_ctrl->rem_tail_bytes)
         is_complete = true;
 
     // Move the pointer to the data bytes array,
     // and decrement the amount of remaining bytes.
     // It does not matter that the data pointer is outside range,
     // it is protected by the rem_data_bytes variable.
-    *data           += chunk_size;//(*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
-    *rem_data_bytes -= chunk_size;//(*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
+    sha1_ctrl->data_bytes       += chunk_size;//(*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
+    sha1_ctrl->rem_data_bytes   -= chunk_size;//(*rem_data_bytes > 64) ? 64 : *rem_data_bytes;
     
     
     /* DO PROCESSING */
