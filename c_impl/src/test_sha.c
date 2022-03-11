@@ -10,6 +10,8 @@ int main(int argc, char const *argv[])
     char data[] = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567";
     //char data[] = "abc";
     //char data[] = "";
+
+    //char *data = malloc(1000001 * sizeof(char)); memset(data, 'a', 1000000); data[1000000] = 0;
     
     SHA1(digest, (uint8_t*)data, strlen(data));
     
