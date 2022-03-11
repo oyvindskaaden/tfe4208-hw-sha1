@@ -17,13 +17,13 @@
 
 #define big_endian(value)   (((value & 0xff) << 24) | (((value & 0xff00)) << 8) | (((value & 0xff0000)) >> 8) | ((value & 0xff000000) >> 24))
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
-#define DBGPRT(format, args...)       {printf("[DEBUG] ");printf(format, ##args);putchar('\n');}
-#define DBGPRTARR(array_ptr, array_len)       {printf("[DEBUG] ");debug_print_array_bytes(array_ptr, array_len);}
+#define DBGPRT(format, args...)                     {printf("[DEBUG] ");printf(format, ##args);}
+#define DBGPRTARR(array_ptr, array_len, array_name) {printf("[DEBUG] %s ", array_name);debug_print_array_bytes(array_ptr, array_len);}
 #else
 #define DBGPRT(format, args...)       
-#define DBGPRTARR(array_ptr, array_len)
+#define DBGPRTARR(array_ptr, array_len, array_name)
 #endif
 
 typedef struct sha1
