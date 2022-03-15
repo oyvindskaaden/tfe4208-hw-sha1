@@ -191,12 +191,14 @@ digest_chunk(uint32_t *hash_words, SHA1_Control_t *sha1_ctrl)
     hash_words[3] += d;
     hash_words[4] += e;
 
-    DBGPRT("===== <Loop  Done!> =====\n\n")
+    DBGPRT("----- <Loop  Done!> -----\n\n")
     return is_complete;
 }
 
-void print_sha(uint32_t *digest, bool append_newline)
-{
+void 
+print_sha(uint32_t *digest, bool append_newline)
+{   
+    // Print out the digest
     for (int i = 0; i < 5; i++)
         printf("%08x ", digest[i]);
     if (append_newline)
@@ -206,15 +208,21 @@ void print_sha(uint32_t *digest, bool append_newline)
 char *
 sha1_to_string(uint32_t *digest, char *sha1_string)
 {
+    // Zero the string
     memset(sha1_string, 0, 41);
+    
+    // Format the data and copy to string.
     sprintf(sha1_string, "%08x%08x%08x%08x%08x", digest[0], digest[1], digest[2], digest[3], digest[4]);
+    
+    // Set last part of string to null
+    sha1_string[40] = 0; 
 
-    sha1_string[40] = 0; // Set last part of string to null
-
+    // Return the string pointer
     return sha1_string;
 }
 
-void debug_print_array_bytes(uint8_t *array_ptr, uint64_t array_len)
+void 
+debug_print_array_bytes(uint8_t *array_ptr, uint64_t array_len)
 {
     putchar('[');
     for (int i = 0; i < array_len; i++)
