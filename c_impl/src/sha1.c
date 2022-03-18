@@ -97,7 +97,7 @@ digest_chunk(uint32_t *hash_words, SHA1_Control_t *sha1_ctrl)
     memset(w, 0, NO_WORK_WORDS * sizeof(uint32_t));
 
     // Get the chunk size, if more than 64, set it to 64.
-    uint8_t chunk_size = (sha1_ctrl->rem_data_bytes > 64) ? 64 : sha1_ctrl->rem_data_bytes;
+    uint8_t chunk_size = (sha1_ctrl->rem_data_bytes > CHUNK_SIZE_BYTES) ? CHUNK_SIZE_BYTES : sha1_ctrl->rem_data_bytes;
 
     // If the chunk size is smaller than 64, return the remaining bytes and start copying in from tail bytes
     int rem_bytes_in_chunk = CHUNK_SIZE_BYTES - chunk_size;
