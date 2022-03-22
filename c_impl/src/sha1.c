@@ -180,7 +180,7 @@ digest_chunk(uint32_t *hash_words, SHA1_Control_t *sha1_ctrl)
         uint32_t temp = (rol(a, 5)) + f + e + k + w[i];
         e = d;
         d = c;
-        c = rol(b, 30);
+        c = ror(b,2);   // Same as rol(b, 30);
         b = a;
         a = temp;
     }

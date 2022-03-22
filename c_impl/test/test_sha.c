@@ -32,21 +32,9 @@ int main(int argc, char const *argv[])
     uint32_t digest[5];
     char result_string[41];
 
-    char *data; //= "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01234567";
+    char *data;
     char *known_digest;
     char *name_of_test;
-    // char data[] = "abc";
-    // char data[] = "";
-
-    // char *data = malloc(1000001 * sizeof(char)); memset(data, 'a', 1000000); data[1000000] = 0;
-
-    // SHA1(digest, (uint8_t*)data, strlen(data));
-
-    // printf("Data:\n%s\n", data);
-
-    // sha1_to_string(digest, result_string);
-    // printf("SHA1: %s\n", result_string);
-    // print_sha(digest, true);
 
     /***** TESTS *****/
 
