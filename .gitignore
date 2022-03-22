@@ -76,3 +76,6 @@ PLLJ_PLLSPE_INFO.txt
 *.o
 test_sha
 *.plist
+*.i
+*.s
+callgrind.out.*
