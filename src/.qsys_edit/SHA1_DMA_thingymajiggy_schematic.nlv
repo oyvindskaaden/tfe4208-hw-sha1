@@ -1,0 +1,19 @@
+# # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
+# 
+preplace inst DE2_115SOPC.Nios_2_Processor.cpu -pg 1
+preplace inst DE2_115SOPC.onchip_memory2_0 -pg 1 -lvl 4 -y 30
+preplace inst DE2_115SOPC -pg 1 -lvl 1 -y 40 -regy -20
+preplace inst DE2_115SOPC.dma_0 -pg 1 -lvl 3 -y 70
+preplace inst DE2_115SOPC.clk_50 -pg 1 -lvl 2 -y 30
+preplace inst DE2_115SOPC.Nios_2_Processor.clock_bridge -pg 1
+preplace inst DE2_115SOPC.Nios_2_Processor.reset_bridge -pg 1
+preplace inst DE2_115SOPC.Nios_2_Processor -pg 1 -lvl 1 -y 140
+preplace netloc POINT_TO_POINT<net_container>DE2_115SOPC</net_container>(MASTER)dma_0.read_master,(SLAVE)onchip_memory2_0.s2) 1 3 1 N
+preplace netloc POINT_TO_POINT<net_container>DE2_115SOPC</net_container>(MASTER)dma_0.write_master,(SLAVE)onchip_memory2_0.s1) 1 3 1 970
+preplace netloc INTERCONNECT<net_container>DE2_115SOPC</net_container>(MASTER)Nios_2_Processor.instruction_master,(SLAVE)Nios_2_Processor.debug_mem_slave,(SLAVE)dma_0.control_port_slave,(MASTER)Nios_2_Processor.data_master) 1 0 3 60 280 440 170 680
+preplace netloc FAN_OUT<net_container>DE2_115SOPC</net_container>(SLAVE)Nios_2_Processor.clk,(SLAVE)onchip_memory2_0.clk1,(SLAVE)dma_0.clk,(MASTER)clk_50.clk) 1 0 4 60 100 NJ 100 660 40 N
+preplace netloc INTERCONNECT<net_container>DE2_115SOPC</net_container>(SLAVE)onchip_memory2_0.reset1,(MASTER)Nios_2_Processor.debug_reset_request,(SLAVE)clk_50.clk_in_reset,(MASTER)clk_50.clk_reset,(SLAVE)dma_0.reset,(SLAVE)Nios_2_Processor.reset) 1 0 4 80 300 460 190 720 60 N
+preplace netloc EXPORT<net_container>DE2_115SOPC</net_container>(MASTER)DE2_115SOPC.nios_2_processor_custom_instruction_master,(MASTER)Nios_2_Processor.custom_instruction_master) 1 1 4 NJ 150 NJ 180 NJ 180 NJ
+preplace netloc EXPORT<net_container>DE2_115SOPC</net_container>(SLAVE)DE2_115SOPC.clk,(SLAVE)clk_50.clk_in) 1 0 2 NJ 40 NJ
+levelinfo -pg 1 0 30 1350
+levelinfo -hier DE2_115SOPC 40 200 490 750 1020 1130
