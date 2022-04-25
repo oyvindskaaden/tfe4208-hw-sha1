@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+#ifdef VALGRIND
+#include <valgrind/callgrind.h>
+#endif
+
 #define SHA1_LEN_WORDS      5                  /* 5 32 bit words in each digest */
 #define SHA1_LEN_BYTES      SHA1_LEN_WORDS * 4 /* 160 bits */
 

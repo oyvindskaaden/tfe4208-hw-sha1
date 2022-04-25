@@ -66,6 +66,7 @@ SHA1(uint32_t *digest, uint8_t *data, uint64_t data_length)
 
     digest = set_digest(digest, h);
 
+
     return digest;
 }
 
@@ -102,6 +103,11 @@ digest_chunk(uint32_t *hash_words, SHA1_Control_t *sha1_ctrl)
     // If the chunk size is smaller than 64, return the remaining bytes and start copying in from tail bytes
     int rem_bytes_in_chunk = CHUNK_SIZE_BYTES - chunk_size;
     DBGPRT("Remaining bytes in data chunk: %d\n", rem_bytes_in_chunk)
+
+#ifdef VALGRIND
+    CALLGRIND_START_INSTRUMENTATION;
+    CALLGRIND_TOGGLE_COLLECT;
+#endif
 
     for (int i = 0; i < CHUNK_SIZE_BYTES /*chunk_size*/; i++)
     {
@@ -192,6 +198,11 @@ digest_chunk(uint32_t *hash_words, SHA1_Control_t *sha1_ctrl)
     hash_words[4] += e;
 
     DBGPRT("----- <Loop  Done!> -----\n\n")
+
+#ifdef VALGRIND
+    CALLGRIND_TOGGLE_COLLECT;
+    CALLGRIND_STOP_INSTRUMENTATION;
+#endif
     return is_complete;
 }
 

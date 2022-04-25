@@ -39,18 +39,20 @@ int main(int argc, char const *argv[])
     /***** TESTS *****/
 
     // Test vectors from https://www.di-mgt.com.au/sha_testvectors.html
-
+#ifndef VALGRIND
     // Empty data
     name_of_test    = "Empty data";
     data            = "";
     known_digest    = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
     test_sha1(data, strlen(data), known_digest, name_of_test);
+#endif
 
     // Simple: 'abc'
     name_of_test    = "Simple: 'abc'";
     data            = "abc";
     known_digest    = "a9993e364706816aba3e25717850c26c9cd0d89d";
     test_sha1(data, strlen(data), known_digest, name_of_test);
+#ifndef VALGRIND
 
     // Fill the buffer
     name_of_test    = "Fill the buffer";
@@ -58,12 +60,12 @@ int main(int argc, char const *argv[])
     known_digest    = "84983e441c3bd26ebaae4aa1f95129e5e54670f1";
     test_sha1(data, strlen(data), known_digest, name_of_test);
 
+
     // Two rounds with digest
     name_of_test    = "Two rounds with digest";    
     data            = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu";
     known_digest    = "a49b2446a02c645bf419f995b67091253a04a259";
     test_sha1(data, strlen(data), known_digest, name_of_test);
-
     // One millon 'a'
     name_of_test    = "One millon 'a'";
     data            = malloc(1000000 * sizeof(char)); memset(data, 'a', 1000000);
@@ -82,7 +84,7 @@ int main(int argc, char const *argv[])
     data            = "The quick brown fox jumps over the lazy cog";
     known_digest    = "de9f2c7fd25e1b3afad3e85a0bd17d9b100db4b3";
     test_sha1(data, strlen(data), known_digest, name_of_test);
-
+#endif
     printf("All tests passed!\n");
 
     return 0;
